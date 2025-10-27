@@ -13,47 +13,48 @@ import json
 #uvicorn main:app --reload --port 8165
 
 image = "C:/Users/Student/Desktop/FastApi8165/bgitu2.png"
-film_img_path = "/film_files/"
+
+BASE_DIR = Path(__file__).resolve().parent
+film_img_path = BASE_DIR / "film_files"
 
 app = FastAPI()
 app.mount("/film_files", StaticFiles(directory=film_img_path), name="film_files")
 
+movie1 = Movietop(
+    name="Deadpool",
+    id=1,
+    cost=202,
+    director="JS",
+    watched=True,
+    file_path="film_files/movie1_Deadpool.jpg"
+)
 
-movie1 = Movietop(**{
-    "name": "Deadpool",
-    "id": 1,
-    "cost": 202,
-    "director": "JS",
-    "watched" : True,
-    "file_path" : "film_files/movie1_Deadpool.jpg"
-})
+movie2 = Movietop(
+    name="Spider Man",
+    id=2,
+    cost=422,
+    director="DK",
+    watched=True,
+    file_path="film_files/movie1_Deadpool.jpg"
+)
 
-movie2 = Movietop(**{
-    "name": "Spider Man",
-    "id": 2,
-    "cost": 422,
-    "director": "DK",
-    "watched" : True,
-    "file_path" : "film_files/movie1_Deadpool.jpg"
-})
+movie3 = Movietop(
+    name="SvO",
+    id=3,
+    cost=600,
+    director="IO",
+    watched=True,
+    file_path="film_files/movie1_Deadpool.jpg"
+)
 
-movie3 = Movietop(**{
-    "name": "Formula 1",
-    "id": 3,
-    "cost": 600,
-    "director": "IO",
-    "watched" : True,
-    "file_path" : "film_files/movie1_Deadpool.jpg"
-})
-
-movie4 = Movietop(**{
-    "name": "Breaking Bad",
-    "id": 4,
-    "cost": 700,
-    "director": "CC",
-    "watched" : True,
-    "file_path" : "film_files/movie1_Deadpool.jpg"
-})
+movie4 = Movietop(
+    name="Breaking Bad",
+    id=4,
+    cost=700,
+    director="CC",
+    watched=True,
+    file_path="film_files/movie1_Deadpool.jpg"
+)
 
 movies_dict = {
     "movie1": movie1,
@@ -104,7 +105,7 @@ async def get_movie_by_id(movie_id: int):
                             <p><b>Режиссёр:</b> {value.director}</p>
                             <p><b>Просмотрен:</b> {"Да" if value.watched else "Нет"}</p>
                             <p><b>Файл:</b></p>
-                            <img src="/{value.file_path}" alt="{value.name}" style="max-width:300px;">
+                            <img src="/{value.file_path.lstrip('/')}" alt="{value.name}" style="max-width:300px;">
                         </body>
                         </html>
                         """
@@ -135,11 +136,13 @@ async def formfilm(
             )
 
     filename = f'movie_{movie_count}_{file.filename}'
-    file_save = os.path.join(film_img_path, filename)
+    file_save = film_img_path / filename
 
     with open(file_save, "wb") as f:
         content = await file.read()
         f.write(content)
+
+    file_path = f"film_files/{filename}"
 
     movie = Movietop(
         name=name,
@@ -147,7 +150,7 @@ async def formfilm(
         cost=cost,
         director=director,
         watched=watched,
-        file_path=file_save
+        file_path=file_path
     )
 
     movie_key = f"movie{movie_count}"
