@@ -1,7 +1,29 @@
 <form action="http://127.0.0.1:8165/movieform/" method="post">
-    <input type="text" name="name" placeholder="Имя Фильма" required>
+    <label>Имя фильма:</label><br>
+    <input type="text" name="name" placeholder="Имя фильма" required>
+    <br><br>
+
+    <label>Айдишник:</label><br>
     <input type="number" name="id" placeholder="Айдишник" required>
+    <br><br>
+
+    <label>Цена:</label><br>
     <input type="number" name="cost" placeholder="Цена" required>
-    <input type="text" name="director" placeholder="Директор" required>
+    <br><br>
+
+    <label>Режиссёр:</label><br>
+    <input type="text" name="director" placeholder="Режиссёр" required>
+    <br><br>
+
+    <label>
+    Просмотрено:
+    <input type="checkbox" name="watched">
+    </label>
+    <br><br>
+
+    <label>Файл:</label><br>
+    <input type="file" name="file" placeholder="Обложка/текст" required>
+    <br><br>
+
     <button type="submit">Отправить</button>
 </form>

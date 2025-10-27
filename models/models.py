@@ -1,4 +1,6 @@
 from pydantic import BaseModel
+from typing import Optional
+
 
 
 class Movietop(BaseModel):
@@ -7,3 +9,4 @@ class Movietop(BaseModel):
     cost: int
     director: str
     watched: bool
+    file_path: Optional[str]

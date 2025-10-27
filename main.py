@@ -3,6 +3,9 @@ from fastapi import File, UploadFile
 from models.models import Movietop
 from fastapi.responses import HTMLResponse
 from fastapi.responses import FileResponse
+from fastapi.staticfiles import StaticFiles
+
+from pathlib import Path
 import os
 
 import json
@@ -10,15 +13,19 @@ import json
 #uvicorn main:app --reload --port 8165
 
 image = "C:/Users/Student/Desktop/FastApi8165/bgitu2.png"
+film_img_path = "/film_files/"
 
 app = FastAPI()
+app.mount("/film_files", StaticFiles(directory=film_img_path), name="film_files")
+
 
 movie1 = Movietop(**{
     "name": "Deadpool",
     "id": 1,
     "cost": 202,
     "director": "JS",
-    "watched" : True
+    "watched" : True,
+    "file_path" : "film_files/movie1_Deadpool.jpg"
 })
 
 movie2 = Movietop(**{
@@ -26,7 +33,8 @@ movie2 = Movietop(**{
     "id": 2,
     "cost": 422,
     "director": "DK",
-    "watched" : True
+    "watched" : True,
+    "file_path" : "film_files/movie1_Deadpool.jpg"
 })
 
 movie3 = Movietop(**{
@@ -34,7 +42,8 @@ movie3 = Movietop(**{
     "id": 3,
     "cost": 600,
     "director": "IO",
-    "watched" : True
+    "watched" : True,
+    "file_path" : "film_files/movie1_Deadpool.jpg"
 })
 
 movie4 = Movietop(**{
@@ -42,7 +51,8 @@ movie4 = Movietop(**{
     "id": 4,
     "cost": 700,
     "director": "CC",
-    "watched" : True
+    "watched" : True,
+    "file_path" : "film_files/movie1_Deadpool.jpg"
 })
 
 movies_dict = {
@@ -79,17 +89,25 @@ async def get_movietop():
 async def get_image():
     return FileResponse(image);
 
-@app.get("/movietop/{movie_id}")
+@app.get("/movietop/{movie_id}",  response_class=HTMLResponse)
 async def get_movie_by_id(movie_id: int):
     for key, value in movies_dict.items():
         if value.id == movie_id:
-            return {
-                "name": value.name,
-                "id": value.id,
-                "cost": value.cost,
-                "director": value.director,
-                "watched" : value.watched
-            }
+            return f"""
+                        <html>
+                        <head><title>{value.name}</title></head>
+                        <body style="font-family: Arial; margin: 20px;">
+                            <h1>Информация о фильме</h1>
+                            <p><b>Название:</b> {value.name}</p>
+                            <p><b>ID:</b> {value.id}</p>
+                            <p><b>Стоимость:</b> {value.cost}</p>
+                            <p><b>Режиссёр:</b> {value.director}</p>
+                            <p><b>Просмотрен:</b> {"Да" if value.watched else "Нет"}</p>
+                            <p><b>Файл:</b></p>
+                            <img src="/{value.file_path}" alt="{value.name}" style="max-width:300px;">
+                        </body>
+                        </html>
+                        """
     raise HTTPException(status_code=424, detail="Error, this movie doesn't exist")
 
 
@@ -103,8 +121,10 @@ async def formfilm(
     id: int = Form(...),
     cost: int = Form(...),
     director: str = Form(...),
-    watched: bool = Form(False)
+    watched: bool = Form(...),
+    file: UploadFile = File(...)
 ):
+
     global movie_count
 
     for key, movie in movies_dict.items():
@@ -114,22 +134,24 @@ async def formfilm(
                 detail="Ошибка, фильм с данным id уже существует"
             )
 
+    filename = f'movie_{movie_count}_{file.filename}'
+    file_save = os.path.join(film_img_path, filename)
+
+    with open(file_save, "wb") as f:
+        content = await file.read()
+        f.write(content)
+
     movie = Movietop(
         name=name,
         id=id,
         cost=cost,
         director=director,
-        watched=watched
+        watched=watched,
+        file_path=file_save
     )
+
     movie_key = f"movie{movie_count}"
     movies_dict[movie_key] = movie
     movie_count += 1
 
-    return {
-        "movie_key" : movie_key,
-        "name": movie.name,
-        "id": movie.id,
-        "cost": movie.cost,
-        "director": movie.director,
-        "watched": movie.watched
-    }
+    return movie
